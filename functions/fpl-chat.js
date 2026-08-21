@@ -32,6 +32,8 @@
 // llama-3.3-70b-versatile/llama-3.1-8b-instant (the previous pair here) were
 // deprecated by Groq with an August 16 2026 shutdown on the free/developer
 // tier — migrated to Groq's own recommended replacements ahead of that date.
+import { teamNewsPromptBlock, scoutPicksPromptBlock } from '../lib/insights.mjs';
+
 const PRIMARY_MODEL = 'openai/gpt-oss-20b';
 const FALLBACK_MODEL = 'openai/gpt-oss-120b';
 
@@ -227,7 +229,7 @@ function num(v) {
   return Number.isFinite(n) ? n : 0;
 }
 
-function buildSystemPrompt(data, matchedPlayers) {
+function buildSystemPrompt(data, matchedPlayers, scoutPicks) {
   const ai = data?.ai || {};
   const context = {
     gameweek: data?.gameweek || 'unknown',
@@ -248,6 +250,24 @@ function buildSystemPrompt(data, matchedPlayers) {
   const captaincyCandidates = (data?.bestXI?.captaincyPicks || []).map((p) => ({ ...enrich(p), whyShortlisted: p.reason || null }));
   const differentialCandidates = (data?.differentials || []).slice(0, 8).map((p) => ({ ...enrich(p), whyShortlisted: p.reason || null }));
   const topByPosition = topPlayersByPosition(data?.allPlayers || [], data?.fixturesByTeamId, data?.gameweekId);
+
+  // Team News scoped to teams actually relevant here (captaincy/differential
+  // candidates + any player named in the conversation), NOT a blanket dump
+  // of all 20 clubs — the wide topByPosition pool below already caused a
+  // real Groq 413 "request too large" error in production once (see its own
+  // comment), and an unconditional 20-team Team News block on top of that
+  // measured ~900 extra tokens, enough to risk tripping the exact same
+  // ceiling again. Scoping to what's actually being discussed keeps this
+  // small in the common case while still surfacing real signal when it's
+  // genuinely relevant.
+  const relevantTeams = new Set([
+    ...captaincyCandidates.map((p) => p.team),
+    ...differentialCandidates.map((p) => p.team),
+    ...matchedPlayers.map((p) => p.team),
+  ]);
+  const scopedTeamNews = data?.teamNews
+    ? Object.fromEntries(Object.entries(data.teamNews).filter(([team]) => relevantTeams.has(team)))
+    : null;
 
   const playerBlock = matchedPlayers.length
     ? `\n\nReal current data for players named in this conversation (this IS the dashboard's live squad database — treat it as ground truth, do not contradict it):\n${JSON.stringify(matchedPlayers.map(enrich), null, 2)}`
@@ -286,7 +306,7 @@ Hard rules:
 - Treat this like a real conversation with a person, not a rigid query interface — expect ranking questions phrased loosely ("top 3 forwards", "who are the best midfielders", "who's more likely to score this week", "who has a better chance of returning points", "who should I bring in") as all asking essentially the same thing: YOU rank real players using the real stats given — epNext (FPL's own forward-looking projection), xGI, form, and fixture difficulty are all real signals to weigh, but the wide player pool below is deliberately NOT pre-sorted by quality, so this has to be your own analysis, not a lookup of whoever happens to be listed first. Don't say you "only have one forward" or similar just because nobody happens to be named in the conversation yet — check the wide player pool below first.
 
 Today's real context (from this morning's data refresh):
-${JSON.stringify(context, null, 2)}${candidateBlock}${playerBlock}
+${JSON.stringify(context, null, 2)}${candidateBlock}${playerBlock}${teamNewsPromptBlock(scopedTeamNews)}${scoutPicksPromptBlock(scoutPicks)}
 
 Stay strictly on-topic: Fantasy Premier League and real football only. Politely decline anything unrelated (homework, coding, general chit-chat, etc.) and steer the conversation back to FPL.`;
 }
@@ -365,11 +385,27 @@ export async function onRequestPost({ request, env }) {
     data = null;
   }
 
+  // Real official FPL Scout Picks (see public/scoutPicks.json) — not part of
+  // the KV blob itself (only used transiently during the daily refresh to
+  // ground the Gemini/Groq consensus), so fetched fresh here too, same
+  // best-effort, gameweek-matched pattern as lib/refresh.mjs. Cheap static
+  // file, no added AI/API cost.
+  let scoutPicks = null;
+  try {
+    const scoutPicksRes = await fetch('https://inferno-fpl.pages.dev/scoutPicks.json');
+    if (scoutPicksRes.ok) {
+      const parsed = await scoutPicksRes.json();
+      if (parsed?.visible && parsed.gameweek === data?.gameweekId) scoutPicks = parsed;
+    }
+  } catch {
+    scoutPicks = null;
+  }
+
   const searchText = [...history.map((m) => m.content), message].join(' ');
   const matchedPlayers = findMentionedPlayers(searchText, data?.allPlayers || [], MAX_MATCHED_PLAYERS);
 
   const messages = [
-    { role: 'system', content: buildSystemPrompt(data, matchedPlayers) },
+    { role: 'system', content: buildSystemPrompt(data, matchedPlayers, scoutPicks) },
     ...history,
     { role: 'user', content: message },
   ];
