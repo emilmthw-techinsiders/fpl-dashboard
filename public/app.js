@@ -1392,8 +1392,29 @@ function renderRateSquad() {
   const ptsValueScore = scaleClamp(avgPtsValue, 15);
   const valueScore = epValueScore * (1 - seasonProgress) + ptsValueScore * seasonProgress;
 
-  const expectedScore = scaleClamp(avgEpNext, 6);
-  const formScore = scaleClamp(avgForm, 8);
+  // Verified against real live data (GW1, 2026/27): the single highest
+  // epNext in the entire ~600-player pool is 4.0, and even a THEORETICAL
+  // best-possible XI (picking the single top epNext player at every
+  // position, ignoring budget entirely) only averages ~3.35 across all 11
+  // spots — GKP/DEF naturally run lower than MID/FWD, pulling any real XI's
+  // average well below any one star's number. A fixed late-season ceiling
+  // of 6 (only reachable once double-gameweeks/hot streaks exist) structurally
+  // capped even a genuinely optimal early-season XI in the 50s, since
+  // nothing on earth could reach it yet. Blends the same way the weights
+  // below already do: a realistic-for-right-now early ceiling (tuned so a
+  // real, well-built early-season XI lands in the 80s, not the 50s, while a
+  // deliberately weak squad still clearly separates in the 40s — verified
+  // against both), rising to a realistic established-season ceiling that
+  // allows for real DGW spikes later.
+  const expectedCeiling = 3.0 + (6.5 - 3.0) * seasonProgress;
+  const expectedScore = scaleClamp(avgEpNext, expectedCeiling);
+  // FPL's own `form` field is genuinely 0 for the ENTIRE player pool before
+  // any match has been played this season (verified: all ~600 players read
+  // form=0 pre-GW1) — scoring every possible squad 0/10 here isn't a real
+  // quality signal, it's "no data exists yet" for literally everyone.
+  // Treated as unavailable and its weight redistributed, the exact same
+  // pattern already used below for matchupScore.
+  const formScore = avgForm > 0 ? scaleClamp(avgForm, 8) : null;
   const fixtureScore = scaleClamp(avgFixtureEase, 5);
   const balanceScore = scaleClamp(uniqueTeams, tray.length || 1);
 
@@ -1426,14 +1447,19 @@ function renderRateSquad() {
   const w = Object.fromEntries(
     Object.keys(early).map((k) => [k, early[k] + (established[k] - early[k]) * seasonProgress])
   );
-  if (matchupScore == null) {
-    const remaining = 1 - w.matchup;
-    delete w.matchup;
-    for (const k of Object.keys(w)) w[k] = w[k] / remaining;
+  // Redistribute any factor that's genuinely unavailable right now (no real
+  // signal yet, not a bad score) proportionally across whatever's left —
+  // sequential so each removal re-normalizes what remains to sum back to 1.
+  for (const [key, val] of [['matchup', matchupScore], ['form', formScore]]) {
+    if (val == null) {
+      const remaining = 1 - w[key];
+      delete w[key];
+      for (const k of Object.keys(w)) w[k] = w[k] / remaining;
+    }
   }
 
   const rating = Math.round((
-    expectedScore * w.expected + formScore * w.form + fixtureScore * w.fixture +
+    expectedScore * w.expected + (formScore != null ? formScore * w.form : 0) + fixtureScore * w.fixture +
     valueScore * w.value + balanceScore * w.balance +
     (matchupScore != null ? matchupScore * w.matchup : 0)
   ) * 10);
@@ -1441,6 +1467,9 @@ function renderRateSquad() {
   const matchupRow = matchupScore != null
     ? `<tr><td>Matchup history (weight ${(w.matchup * 100).toFixed(0)}%, ${matchupMeetings} past meeting${matchupMeetings === 1 ? '' : 's'})</td><td>${matchupScore.toFixed(1)}/10</td></tr>`
     : `<tr><td>Matchup history</td><td>No head-to-head data yet this season</td></tr>`;
+  const formRow = formScore != null
+    ? `<tr><td>Form (weight ${(w.form * 100).toFixed(0)}%)</td><td>${formScore.toFixed(1)}/10</td></tr>`
+    : `<tr><td>Form</td><td>No real gameweek data yet this season</td></tr>`;
 
   output.innerHTML = `
     ${!validFormation ? `<div class="rule-note" style="color:var(--pink)">${tray.length !== 11 ? `Add ${11 - tray.length > 0 ? (11 - tray.length) + ' more to reach 11' : (tray.length - 11) + ' fewer to reach 11'}.` : 'Formation looks off (need 1 GKP, 3-5 DEF, 2-5 MID, 1-3 FWD) — rating still shown below.'}</div>` : ''}
@@ -1450,7 +1479,7 @@ function renderRateSquad() {
     <table class="compare-table rating-table">
       <tbody>
         <tr><td>Expected points (weight ${(w.expected * 100).toFixed(0)}%)</td><td>${expectedScore.toFixed(1)}/10</td></tr>
-        <tr><td>Form (weight ${(w.form * 100).toFixed(0)}%)</td><td>${formScore.toFixed(1)}/10</td></tr>
+        ${formRow}
         <tr><td>Fixture ease (next ${horizon}, weight ${(w.fixture * 100).toFixed(0)}%)</td><td>${fixtureScore.toFixed(1)}/10</td></tr>
         <tr><td>Value (pts per £m, weight ${(w.value * 100).toFixed(0)}%)</td><td>${valueScore.toFixed(1)}/10</td></tr>
         <tr><td>Team variety (weight ${(w.balance * 100).toFixed(0)}%)</td><td>${balanceScore.toFixed(1)}/10</td></tr>
