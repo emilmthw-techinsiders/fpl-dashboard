@@ -379,8 +379,10 @@ function h2hFixturesShellHTML() {
       <h3 style="color:var(--pink);margin-top:6px;margin-bottom:8px;">H2H Fixtures</h3>
       <select id="h2h-gw-select" class="tool-input"></select>
       <div id="h2h-fixtures-list" style="margin-top:14px;"></div>
-      <h3 style="color:var(--green);margin-top:24px;margin-bottom:8px;">League Standings</h3>
+      <h3 style="color:var(--green);margin-top:24px;margin-bottom:8px;">🏅 Inferno 14 League — Classic Standings</h3>
       <div id="league-standings-list"></div>
+      <h3 style="color:var(--pink);margin-top:24px;margin-bottom:8px;">⚔️ Inferno 14 H2H — League Table</h3>
+      <div id="h2h-standings-list"></div>
     </section>
   `;
 }
@@ -409,6 +411,48 @@ function renderLeagueStandings() {
             <td>${s.managerName}</td>
             <td>${s.gwPoints}</td>
             <td><strong>${s.totalPoints}</strong></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    </div>
+  `;
+}
+
+function renderH2HStandings() {
+  const list = document.getElementById('h2h-standings-list');
+  const standings = STATE.data.h2hStandings;
+  if (!standings || !standings.length) {
+    list.innerHTML = '<p class="block-desc">Not generated yet — check back once Gameweek 1 results are in.</p>';
+    return;
+  }
+  // Real FPL behavior, not a bug: H2H match results (and this table) only
+  // finalize once FPL fully processes a gameweek, which lags behind the
+  // live "GW pts" shown in the classic table above — every row can
+  // legitimately show 0 played mid-gameweek even while real points are
+  // being scored live elsewhere on the site.
+  const allZero = standings.every((s) => s.played === 0);
+  const moveIcon = (m) => m === 'up'
+    ? '<span style="color:var(--green);">▲</span>'
+    : m === 'down'
+      ? '<span style="color:var(--pink);">▼</span>'
+      : '<span style="color:var(--text-dim,#9a94a8);">•</span>';
+  list.innerHTML = `
+    ${allZero ? '<p class="rule-note" style="margin-bottom:8px;">Results still processing on FPL\'s side for this gameweek — win/loss records update once they finalize it, usually shortly after the gameweek fully finishes.</p>' : ''}
+    <div class="table-scroll">
+    <table class="compare-table">
+      <thead><tr><th></th><th>Team</th><th>Manager</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead>
+      <tbody>
+        ${standings.map((s) => `
+          <tr>
+            <td>${moveIcon(s.movement)} ${s.rank}</td>
+            <td>${s.teamName}</td>
+            <td>${s.managerName}</td>
+            <td>${s.played}</td>
+            <td>${s.won}</td>
+            <td>${s.drawn}</td>
+            <td>${s.lost}</td>
+            <td><strong>${s.leaguePoints}</strong></td>
           </tr>
         `).join('')}
       </tbody>
@@ -469,6 +513,7 @@ function setupH2HFixtures() {
   renderH2HFixtures(defaultGw.id);
   select.addEventListener('change', (e) => renderH2HFixtures(Number(e.target.value)));
   renderLeagueStandings();
+  renderH2HStandings();
 }
 
 function renderFixturesList(gwId) {
