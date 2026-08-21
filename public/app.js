@@ -323,11 +323,16 @@ function bestXIHTML(data) {
             // snapshot written before this field existed (no captaincyPicks
             // entry had a `role` yet) — never render a raw "undefined".
             const role = p.role || (i === 0 ? 'Captain' : 'Vice-Captain');
+            // Real, confirmed case (GW1's own locked/frozen data, 2026-08-22):
+            // an even older snapshot can have `role` but no `reason` key at
+            // all — GW1 is hard-locked and can never be recomputed, so this
+            // has to be a display-side fallback, not a data fix.
+            const reason = p.reason || (p.epNext != null ? `xPts ${parseFloat(p.epNext).toFixed(1)}` : 'Backup captaincy option');
             return `
             <div class="list-row">
               ${p.teamBadge ? `<img class="mini-badge" src="${p.teamBadge}" alt="${p.team}" />` : ''}
               <span class="list-name">${role === 'Captain' ? '⭐ ' : '🅱️ '}${p.name} <span style="color:var(--text-dim);font-weight:400;">(${role})</span></span>
-              <span class="list-stat">${p.reason}</span>
+              <span class="list-stat">${reason}</span>
             </div>
           `;
           }).join('')}
