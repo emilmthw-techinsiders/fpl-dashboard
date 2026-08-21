@@ -40,11 +40,6 @@ close to the real moment, not up to a day late the way a single fixed daily run
 could miss it. Once a gameweek locks, it's a hard freeze — no further changes, not
 even for a late injury.
 
-`public/friendlies.json` is a legacy, hand-edited pre-season-only input (real
-friendly goals/assists, used only while `isPreseason` is true as a minor scoring
-nudge in `lib/insights.mjs`) — it has no dedicated UI tab any more and is inert for
-the rest of the season once Gameweek 1 starts.
-
 ## If you ever need to manually refresh the data right now
 
 The cron worker only runs on its scheduled cadence and isn't reachable over the
@@ -83,7 +78,7 @@ and pass its `history` array in instead of `[]`.
 ## Project structure
 
 ```
-public/                    the site (HTML/CSS/JS + friendlies.json)
+public/                    the site (HTML/CSS/JS + scoutPicks.json)
 functions/get-data.js       Cloudflare Pages Function — serves the latest KV data to the page
 lib/
   insights.mjs              all the analysis logic (Best XI, differentials, fixtures, etc.)

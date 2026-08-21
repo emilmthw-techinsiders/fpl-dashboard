@@ -3,7 +3,7 @@
   "gameweek": 1,
   "sourceUrl": "https://www.premierleague.com/en/news/4681112",
   "lastUpdated": "2026-08-21",
-  "note": "Manually updated — real player names/prices/categories extracted from the official FPL Scout Picks article, not the article's own written analysis (that stays copyrighted PL editorial content, never reproduced here). Kept in sync with friendlies.json's own pattern: a plain static file, edited by hand each gameweek, zero API/AI cost to refresh. Only meaningful when 'gameweek' above matches the site's current gameweek — refresh.mjs checks that before using it, so a stale file from a prior week is silently ignored rather than misapplied.",
+  "note": "Manually updated — real player names/prices/categories extracted from the official FPL Scout Picks article, not the article's own written analysis (that stays copyrighted PL editorial content, never reproduced here). A plain static file, edited by hand each gameweek (or by the weekly scheduled agent), zero API/AI cost to refresh. Only meaningful when 'gameweek' above matches the site's current gameweek — refresh.mjs checks that before using it, so a stale file from a prior week is silently ignored rather than misapplied.",
   "picks": [
     { "name": "Erling Haaland", "price": 15.5, "category": "must-have" },
     { "name": "Bruno Fernandes", "price": 12.0, "category": "must-have" },

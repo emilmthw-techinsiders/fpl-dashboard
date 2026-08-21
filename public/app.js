@@ -1,7 +1,7 @@
 const params = new URLSearchParams(location.search);
 const DATA_URL = params.get('demo') ? 'sample-data.json' : '/get-data';
 
-const STATE = { data: null, friendlies: null };
+const STATE = { data: null };
 
 const FALLBACK_PHOTO =
   'data:image/svg+xml;utf8,' +
@@ -145,31 +145,6 @@ function setupScrollHints() {
 }
 
 // Only meaningful pre-GW1: real form/totalPoints are near-zero or carried
-// over from last season until real gameweek data exists, so the hand-curated
-// Friendlies Watch stats (real observed pre-season goals/assists) are the
-// more telling signal for that one decision window. data.isPreseason is true
-// ONLY before GW1's first match kicks off and can never become true again
-// later in the season (some gameweek is always "current" once it starts),
-// so gating on it naturally restricts this to GW1 and nothing after.
-function findFriendlyStats(playerName) {
-  const f = STATE.friendlies;
-  if (!f || !f.visible) return null;
-  const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-  const target = norm(playerName);
-  const nameMatches = (entryName) => {
-    const a = norm(entryName);
-    return a === target || a.endsWith(` ${target}`) || target.endsWith(` ${a}`) || a.split(' ').pop() === target.split(' ').pop();
-  };
-  const scorer = (f.topScorers || []).find((p) => nameMatches(p.name));
-  const assister = (f.topAssists || []).find((p) => nameMatches(p.name));
-  if (!scorer && !assister) return null;
-  return {
-    preseasonGoals: scorer?.goals ?? 0,
-    preseasonAssists: assister?.assists ?? 0,
-    preseasonNote: scorer?.note || assister?.note || null,
-  };
-}
-
 function fmtUpdated(iso) {
   if (!iso) return 'unknown';
   return new Date(iso).toLocaleString(undefined, {
@@ -177,27 +152,30 @@ function fmtUpdated(iso) {
   });
 }
 
-// The cron runs at 0 5 * * * UTC (see cron-worker/wrangler.toml) — compute
-// the next actual occurrence rather than just saying "daily", so it's
-// obvious exactly when to expect fresh data next.
+// The cron runs every 30 minutes on the clock (see cron-worker/wrangler.toml
+// — */30 * * * * UTC) — compute the next actual :00 or :30 occurrence rather
+// than just saying "soon", so it's obvious exactly when to expect fresh data.
 function nextRefreshTime() {
   const now = new Date();
-  const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 5, 0, 0));
-  if (next <= now) next.setUTCDate(next.getUTCDate() + 1);
+  const next = new Date(now);
+  next.setUTCSeconds(0, 0);
+  const mins = next.getUTCMinutes();
+  next.setUTCMinutes(mins < 30 ? 30 : 60);
   return next.toLocaleString(undefined, {
     weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 }
 
-// If the last refresh is older than ~26 hours (a bit past the 24h cron
-// cycle, so a normal single run isn't flagged), the cron has likely failed
-// silently — surface that instead of quietly serving stale data forever.
+// If the last refresh is older than ~90 minutes (three missed 30-minute
+// ticks — a normal single missed run isn't flagged), the cron has likely
+// failed silently — surface that instead of quietly serving stale data
+// forever.
 function isStale(iso) {
   if (!iso) return true;
-  return (Date.now() - new Date(iso).getTime()) > 26 * 60 * 60 * 1000;
+  return (Date.now() - new Date(iso).getTime()) > 90 * 60 * 1000;
 }
 
-// ---------- Static info sections (friendlies, best XI, differentials, fixtures, sidebar) ----------
+// ---------- Static info sections (best XI, differentials, fixtures, sidebar) ----------
 
 // Real per-team news facts (see lib/teamNews.mjs) — FPL's own official
 // injury/status data synthesized once a day into an original per-team
@@ -1247,20 +1225,13 @@ function renderPlayerCompare() {
   `;
 
   wireAiAskButton('player-compare-ai', 'players', () => ({
-    players: tray.map((p) => {
-      const base = {
-        name: p.name, team: p.team, price: p.price, epNext: p.epNext, form: p.form,
-        pointsPerGame: p.pointsPerGame, totalPoints: p.totalPoints, ownership: p.ownership,
-        xG: p.xG, xA: p.xA, xGI: p.xGI, ictIndex: p.ictIndex,
-      };
-      const preseasonFriendlyStats = STATE.data.isPreseason ? findFriendlyStats(p.name) : null;
-      return preseasonFriendlyStats ? { ...base, preseasonFriendlyStats } : base;
-    }),
+    players: tray.map((p) => ({
+      name: p.name, team: p.team, price: p.price, epNext: p.epNext, form: p.form,
+      pointsPerGame: p.pointsPerGame, totalPoints: p.totalPoints, ownership: p.ownership,
+      xG: p.xG, xA: p.xA, xGI: p.xGI, ictIndex: p.ictIndex,
+    })),
     horizon,
     ruleBasedPick: pick.p.name,
-    note: STATE.data.isPreseason
-      ? 'It is pre-season right now, so form/totalPoints above are near-zero or carried over from last season — not meaningful yet. Where a player has preseasonFriendlyStats, treat those real observed pre-season goals/assists as the more telling current-form signal.'
-      : undefined,
   }), () => `Rule-based pick: ${pick.p.name}`);
 }
 
@@ -1988,16 +1959,9 @@ function setupChatWidget() {
 }
 
 async function init() {
-  const [dataResult, friendliesResult] = await Promise.allSettled([
-    fetch(DATA_URL).then((r) => r.json()),
-    fetch('friendlies.json').then((r) => r.json()),
-  ]);
-
-  const data = dataResult.status === 'fulfilled' ? dataResult.value : { error: true };
-  const friendlies = friendliesResult.status === 'fulfilled' ? friendliesResult.value : null;
+  const data = await fetch(DATA_URL).then((r) => r.json()).catch(() => ({ error: true }));
 
   STATE.data = data;
-  STATE.friendlies = friendlies;
 
   try {
     render(data);
