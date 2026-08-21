@@ -32,13 +32,19 @@ npx wrangler deploy
 ```
 
 The live FPL sections (Best XI, differentials, fixtures, injuries, prices, Team
-News) need no manual work otherwise — the cron worker refreshes them every 3 hours
-on its own (currently `0 */3 * * *` UTC, set in `cron-worker/wrangler.toml`). The
-3-hourly cadence exists specifically so the lock threshold in `lib/history.mjs`
-(~10h before each gameweek's first kick-off — see `LOCK_WINDOW_MS`) gets caught
-close to the real moment, not up to a day late the way a single fixed daily run
-could miss it. Once a gameweek locks, it's a hard freeze — no further changes, not
-even for a late injury.
+News) need no manual work otherwise — the cron worker refreshes them every 5
+minutes on its own (currently `*/5 * * * *` UTC, set in
+`cron-worker/wrangler.toml`). Two very different things ride on that same
+schedule: the cheap parts (fixtures, live gameweek points, injuries, prices)
+refresh on every single tick — this is what gives near-real-time score updates
+during an actual live gameweek, verified against a real GW1 match where FPL's
+own live data was ahead of a slower 30-minute cadence. The expensive parts
+(Team News AI, Scout Picks weighting, the Gemini/Groq consensus behind Best
+XI/Differentials/AI Recommendation) are separately throttled to ~every 3 hours
+while a gameweek is open, and never run at all once it's locked — running the
+cron more often doesn't change that throttle, it's time-based, not tick-based.
+Once a gameweek locks, it's a hard freeze — no further changes, not even for a
+late injury.
 
 ## If you ever need to manually refresh the data right now
 

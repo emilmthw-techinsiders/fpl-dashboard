@@ -152,27 +152,27 @@ function fmtUpdated(iso) {
   });
 }
 
-// The cron runs every 30 minutes on the clock (see cron-worker/wrangler.toml
-// — */30 * * * * UTC) — compute the next actual :00 or :30 occurrence rather
-// than just saying "soon", so it's obvious exactly when to expect fresh data.
+// The cron runs every 5 minutes on the clock (see cron-worker/wrangler.toml
+// — */5 * * * * UTC) — compute the next actual 5-minute mark rather than
+// just saying "soon", so it's obvious exactly when to expect fresh data.
 function nextRefreshTime() {
   const now = new Date();
   const next = new Date(now);
   next.setUTCSeconds(0, 0);
   const mins = next.getUTCMinutes();
-  next.setUTCMinutes(mins < 30 ? 30 : 60);
+  next.setUTCMinutes(Math.ceil((mins + 1) / 5) * 5);
   return next.toLocaleString(undefined, {
     weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 }
 
-// If the last refresh is older than ~90 minutes (three missed 30-minute
+// If the last refresh is older than ~20 minutes (four missed 5-minute
 // ticks — a normal single missed run isn't flagged), the cron has likely
 // failed silently — surface that instead of quietly serving stale data
 // forever.
 function isStale(iso) {
   if (!iso) return true;
-  return (Date.now() - new Date(iso).getTime()) > 90 * 60 * 1000;
+  return (Date.now() - new Date(iso).getTime()) > 20 * 60 * 1000;
 }
 
 // ---------- Static info sections (best XI, differentials, fixtures, sidebar) ----------
@@ -398,6 +398,7 @@ function renderLeagueStandings() {
       ? '<span style="color:var(--pink);">▼</span>'
       : '<span style="color:var(--text-dim,#9a94a8);">•</span>';
   list.innerHTML = `
+    <div class="table-scroll">
     <table class="compare-table">
       <thead><tr><th></th><th>Team</th><th>Manager</th><th>GW pts</th><th>Total</th></tr></thead>
       <tbody>
@@ -412,6 +413,7 @@ function renderLeagueStandings() {
         `).join('')}
       </tbody>
     </table>
+    </div>
   `;
 }
 

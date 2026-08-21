@@ -3,24 +3,29 @@ main = "refresh-data.js"
 compatibility_date = "2026-08-01"
 workers_dev = false
 
-# Runs every 30 minutes (48x/day). Two different things ride on this same
-# schedule, at two different costs:
+# Runs every 5 minutes (288x/day). Bumped from 30 minutes (2026-08-21,
+# during GW1's actual live matches) after real, felt lag: FPL's own live
+# points already had a match's goals in by minute 28, but the site was
+# still showing kickoff's data because the 30-minute cadence hadn't ticked
+# again yet. Two different things ride on this same schedule, at two very
+# different costs:
 #  - Cheap, always-on: fixtures/live gameweek points (see resolvePendingEntries
 #    in lib/history.mjs) — this is what gives near-real-time score updates
 #    during an actual live gameweek. Free FPL API calls, no AI cost, no
-#    reason not to run every tick.
+#    reason not to run every tick, and no reason not to run it often.
 #  - Expensive, throttled: Team News AI, Scout Picks weighting, and the
 #    Gemini/Groq consensus behind Best XI/Differentials/AI Recommendation
 #    (see runExpensiveAI in lib/refresh.mjs) — only actually runs every
 #    ~3 hours while a gameweek is still open (a "preview" doesn't need to be
 #    fresher than that), and NEVER once a gameweek is locked, since that
-#    computation would just be discarded. So the lock point still lands with
-#    data at most ~3h old (a real improvement over the old 24h-stale fixed
-#    daily cron), while post-lock ticks do zero Gemini/Groq calls at all.
-# Net cost while a gameweek is open: same ~16 Gemini + ~8 Groq calls/day as
-# a pure 3-hourly schedule would give; once locked, that drops to zero.
+#    computation would just be discarded. Running the cron itself more often
+#    does NOT change this — the AI throttle is time-based, not tick-based,
+#    so it still only fires every ~3h regardless of how often the cron ticks.
+# Net cost: unchanged from the 30-minute schedule — still ~16 Gemini + ~8
+# Groq calls/day while a gameweek is open, zero once locked. The 5-minute
+# cadence only affects the free, uncapped FPL API calls.
 [triggers]
-crons = ["*/30 * * * *"]
+crons = ["*/5 * * * *"]
 
 # Must be the SAME namespace id as the one in the root wrangler.toml.
 [[kv_namespaces]]
