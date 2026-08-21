@@ -646,9 +646,13 @@ section.block .block-desc {
   text-align: left;
 }
 .fixture-row:hover { background: rgba(255, 255, 255, 0.06); }
-.fixture-row .vs { color: var(--text-dim); font-weight: 400; margin: 0 4px; }
-.fixture-row .kickoff { margin-left: auto; color: var(--text-dim); font-weight: 400; font-size: 0.78rem; }
-.fixture-row .score { color: var(--green); font-weight: 800; margin-left: auto; padding-right: 10px; }
+/* No base .mini-badge size rule exists (only .fixture-table/.list-row
+   scoped ones) — without this, badges here rendered at their raw source
+   image resolution (~110px) instead of icon size. */
+.fixture-row img.mini-badge { width: 20px; height: 20px; vertical-align: middle; flex-shrink: 0; }
+.fixture-row .vs { color: var(--text-dim); font-weight: 400; margin: 0 4px; flex-shrink: 0; }
+.fixture-row .kickoff { margin-left: auto; color: var(--text-dim); font-weight: 400; font-size: 0.78rem; flex-shrink: 0; white-space: nowrap; }
+.fixture-row .score { color: var(--green); font-weight: 800; margin-left: auto; padding-right: 10px; flex-shrink: 0; }
 .h2h-player { color: var(--text-dim, #9a94a8); font-size: 0.82rem; }
 .fixture-row-wrap { display: flex; flex-direction: column; }
 
@@ -700,8 +704,30 @@ section.block .block-desc {
   color: var(--text-dim);
 }
 .fixture-detail.open { display: block; }
-.fixture-detail .stat-line { margin-bottom: 4px; }
-.fixture-detail .stat-line strong { color: var(--text); }
+/* Each stat line used to be one comma-joined run of text ("BPS: Havertz
+   (31), Saka (23), ...") which just wraps as an unreadable wall on mobile
+   for a 15+ entry line like BPS — each entry is now its own wrapping chip. */
+.fixture-detail .stat-line { margin-bottom: 10px; }
+.fixture-detail .stat-line:last-child { margin-bottom: 0; }
+.fixture-detail .stat-label {
+  display: block;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 5px;
+}
+.fixture-detail .stat-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.fixture-detail .stat-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  color: var(--text-dim);
+}
 
 /* Analysis tools: tabs */
 .tools-block { padding-bottom: 28px; }

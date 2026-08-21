@@ -510,7 +510,11 @@ function renderFixturesList(gwId) {
       const f = gw.fixtures[idx];
       const statEntries = Object.entries(f.stats || {});
       const statHTML = statEntries.length
-        ? statEntries.map(([label, entries]) => `<div class="stat-line"><strong>${label}:</strong> ${entries.join(', ')}</div>`).join('')
+        ? statEntries.map(([label, entries]) => `
+          <div class="stat-line">
+            <span class="stat-label">${label}</span>
+            <span class="stat-chips">${entries.map((en) => `<span class="stat-chip">${en}</span>`).join('')}</span>
+          </div>`).join('')
         : null;
       if (f.finished) {
         detail.innerHTML = statHTML || '<p class="block-desc">Match finished, no stat breakdown recorded.</p>';
