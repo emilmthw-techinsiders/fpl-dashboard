@@ -37,10 +37,15 @@ import { teamNewsPromptBlock, scoutPicksPromptBlock } from '../lib/insights.mjs'
 const PRIMARY_MODEL = 'openai/gpt-oss-20b';
 const FALLBACK_MODEL = 'openai/gpt-oss-120b';
 
-// Well under 70b's real free-tier ceiling (~100/day by token budget) — this
-// is a backstop against abuse/bugs for a 14-person league, not a number we
-// expect to ever approach in real use.
-const DAILY_CAP = 80;
+// Verified against Groq's actual published free-tier limit for these models
+// (200,000 tokens/day) — at a typical exchange's real measured size
+// (~7,500-8,000 tokens including the system prompt), Groq's own daily
+// ceiling supports roughly 24-26 full exchanges/day, not 80. The old value
+// of 80 gave a false sense of safety: Groq's real daily limit would be hit
+// first, well before this cap ever engaged, so later requests on a busy day
+// would have failed with a raw Groq error instead of our own clean
+// "daily_cap_reached" message.
+const DAILY_CAP = 20;
 // Last 3 user+assistant exchanges only, to keep per-message token growth
 // bounded — a long chat shouldn't quietly balloon token usage each turn.
 const MAX_HISTORY_MESSAGES = 6;
@@ -185,7 +190,12 @@ function compactPlayer(p, playerStats = null) {
 // still comfortably solves the original "I only have one forward" problem
 // without needing anywhere near 38 players in the pool.
 const RELIABLE_MINUTES = 180; // mirrors lib/insights.mjs's own threshold
-const CHAT_POOL_CAPS = { GKP: 3, DEF: 5, MID: 6, FWD: 4 };
+// Trimmed further (2026-08-21) after measuring the real baseline prompt at
+// ~6,750 tokens even with zero conversation history and no player named —
+// already at/over the entire 8,000 TPM ceiling once the instructional text,
+// a couple matched players, and history are added. Still wide enough to
+// answer "top 3 [position]" questions for every position.
+const CHAT_POOL_CAPS = { GKP: 2, DEF: 4, MID: 5, FWD: 3 };
 
 // Trimmed field set for this block specifically — compactPlayer's full shape
 // (fullName, minutes, xG/xA separately, threat/creativity/influence, ...) is
@@ -246,9 +256,18 @@ function buildSystemPrompt(data, matchedPlayers, scoutPicks) {
   // would risk the exact same failure.
   const playerStats = data?.playerStats || null;
   const enrich = (p) => compactPlayer(p, playerStats);
+  // candidateBlock uses the SAME lean field set as the wide ranking pool
+  // below, not the full compactPlayer shape — measured in production
+  // (2026-08-21) at ~2,786 tokens for just 11 players via compactPlayer,
+  // the single biggest chunk of an already-oversized baseline prompt (a
+  // single typical exchange was landing at/over the entire 8,000 TPM
+  // ceiling by itself). This is a small, curated shortlist, not a
+  // per-player deep-dive — it doesn't need fullName/minutes/xG+xA-split/
+  // richDefensiveStats to do its job.
+  const rank = (p) => compactForRanking(p, data?.fixturesByTeamId, data?.gameweekId);
 
-  const captaincyCandidates = (data?.bestXI?.captaincyPicks || []).map((p) => ({ ...enrich(p), whyShortlisted: p.reason || null }));
-  const differentialCandidates = (data?.differentials || []).slice(0, 8).map((p) => ({ ...enrich(p), whyShortlisted: p.reason || null }));
+  const captaincyCandidates = (data?.bestXI?.captaincyPicks || []).map((p) => ({ ...rank(p), whyShortlisted: p.reason || null }));
+  const differentialCandidates = (data?.differentials || []).slice(0, 8).map((p) => ({ ...rank(p), whyShortlisted: p.reason || null }));
   const topByPosition = topPlayersByPosition(data?.allPlayers || [], data?.fixturesByTeamId, data?.gameweekId);
 
   // Team News scoped to teams actually relevant here (captaincy/differential
