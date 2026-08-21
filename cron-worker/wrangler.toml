@@ -1,0 +1,19 @@
+name = "inferno-fpl-refresh"
+main = "refresh-data.js"
+compatibility_date = "2026-08-01"
+workers_dev = false
+
+# Runs every 3 hours (8x/day) — not for continuous freshness on its own
+# merit, but so the "lock ~10h before this gameweek's first kick-off" check
+# in lib/history.mjs (see LOCK_WINDOW_MS) gets caught within a ~3h window of
+# the real threshold, whatever day/time a given gameweek's kick-off actually
+# falls on, rather than up to 24h late the way a single fixed daily time
+# could miss it by. Cost: ~16 Gemini + ~8 Groq calls/day (up from ~2 + 1),
+# still trivial against free-tier quotas.
+[triggers]
+crons = ["0 */3 * * *"]
+
+# Must be the SAME namespace id as the one in the root wrangler.toml.
+[[kv_namespaces]]
+binding = "FPL_KV"
+id = "5f69f4ededf24cb89c07ee611c9d5fb4"

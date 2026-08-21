@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>Inferno FPL</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <h1>🔥 Inferno FPL</h1>
+      <p id="subtitle" class="subtitle">Loading latest gameweek intel…</p>
+      <div id="deadline-chip" class="deadline-chip" style="display:none;"></div>
+      <div id="crest-strip" class="crest-strip"></div>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <button id="nav-toggle" class="nav-toggle" type="button" aria-label="Toggle menu">☰ Menu</button>
+    <nav id="side-nav" class="side-nav">
+      <button class="nav-item active" type="button" data-page="home">🏠 Home</button>
+      <button class="nav-item" type="button" data-page="teamnews">📰 Team News</button>
+      <button class="nav-item" type="button" data-page="differentials">💎 Differentials</button>
+      <button class="nav-item" type="button" data-page="tools">🔬 Analysis Tools</button>
+      <button class="nav-item" type="button" data-page="fixtures">📊 Fixtures</button>
+      <button class="nav-item" type="button" data-page="watchlist">💰 Watchlist</button>
+      <button class="nav-item" type="button" data-page="league">🏆 League</button>
+    </nav>
+    <main id="app" class="container">
+      <p class="loading">Fetching the latest FPL data…</p>
+    </main>
+  </div>
+
+  <footer class="footer hof-block">
+    <div class="hof-inner">
+      <h2>🏆 Hall of Fame</h2>
+      <p class="hof-desc">13 seasons down. Season 14 is live now.</p>
+      <div class="hof-trophy-row">
+        <span class="hof-trophy-chip hof-top">👑 Ebby <em>4×</em></span>
+        <span class="hof-trophy-chip hof-top">👑 Jerri <em>4×</em></span>
+        <span class="hof-trophy-chip">Mervyn <em>2×</em></span>
+        <span class="hof-trophy-chip">Rishin <em>2×</em></span>
+        <span class="hof-trophy-chip">Jeevan <em>1×</em></span>
+      </div>
+      <div class="hof-seasons-grid">
+        <span class="hof-season-chip"><span class="hof-s">2013/14</span> Jeevan</span>
+        <span class="hof-season-chip"><span class="hof-s">2014/15</span> Ebby</span>
+        <span class="hof-season-chip"><span class="hof-s">2015/16</span> Mervyn</span>
+        <span class="hof-season-chip"><span class="hof-s">2016/17</span> Ebby</span>
+        <span class="hof-season-chip"><span class="hof-s">2017/18</span> Mervyn</span>
+        <span class="hof-season-chip"><span class="hof-s">2018/19</span> Jerri</span>
+        <span class="hof-season-chip"><span class="hof-s">2019/20</span> Jerri</span>
+        <span class="hof-season-chip"><span class="hof-s">2020/21</span> Rishin</span>
+        <span class="hof-season-chip"><span class="hof-s">2021/22</span> Ebby</span>
+        <span class="hof-season-chip"><span class="hof-s">2022/23</span> Jerri</span>
+        <span class="hof-season-chip"><span class="hof-s">2023/24</span> Rishin</span>
+        <span class="hof-season-chip"><span class="hof-s">2024/25</span> Jerri</span>
+        <span class="hof-season-chip"><span class="hof-s">2025/26</span> Ebby</span>
+        <span class="hof-season-chip hof-season-live"><span class="hof-s">2026/27</span> In progress</span>
+      </div>
+    </div>
+  </footer>
+
+  <div id="chat-widget" class="chat-widget">
+    <button id="chat-toggle" class="chat-toggle" type="button" aria-label="Open FPL AI assistant">💬</button>
+    <div id="chat-panel" class="chat-panel" hidden>
+      <div class="chat-panel-header">
+        <span>🤖 FPL AI Assistant</span>
+        <button id="chat-close" type="button" aria-label="Close chat">✕</button>
+      </div>
+      <div id="chat-messages" class="chat-messages">
+        <div class="chat-msg chat-msg-bot">Hey! Ask me anything about FPL strategy, rules, or this gameweek's picks.</div>
+      </div>
+      <form id="chat-form" class="chat-form">
+        <div class="chat-input-wrap">
+          <div id="chat-suggest" class="search-results chat-suggest"></div>
+          <input id="chat-input" type="text" placeholder="Ask about FPL…" maxlength="500" autocomplete="off" />
+        </div>
+        <button type="submit">Send</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="player-modal-backdrop" class="player-modal-backdrop" hidden>
+    <div id="player-modal" class="player-modal">
+      <button id="player-modal-close" class="player-modal-close" type="button" aria-label="Close">✕</button>
+      <div id="player-modal-body"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

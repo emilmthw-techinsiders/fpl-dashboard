@@ -1,0 +1,10 @@
+name = "inferno-fpl"
+pages_build_output_dir = "public"
+compatibility_date = "2026-08-01"
+
+# Filled in automatically by `wrangler kv namespace create FPL_KV` during setup —
+# see README.md. Both this Pages project and cron-worker/wrangler.toml must
+# point at the SAME namespace id.
+[[kv_namespaces]]
+binding = "FPL_KV"
+id = "5f69f4ededf24cb89c07ee611c9d5fb4"

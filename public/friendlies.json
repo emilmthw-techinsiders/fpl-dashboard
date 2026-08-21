@@ -1,0 +1,53 @@
+{
+  "visible": true,
+  "note": "Manually updated — pre-season friendly stats aren't covered by the free FPL API. Unfrozen: previous attempts via general web search kept returning misdated (real-2025) results; this update sources from the official Premier League site (premierleague.com/en/news/4606700) cross-checked against team/broadcaster match reports for scorer/assist detail, all independently confirmed as genuine 2026 pre-season fixtures. Retention policy: 'results' keeps a rolling last-7-days window, trimmed on every update. 'topScorers'/'topAssists' are a running EPL-only leaderboard across the WHOLE pre-season so far, capped at 8 each to stay readable — not time-limited, only real Premier League club players (never opposition friendly-tour clubs), each player appears in exactly one of the two lists (whichever they have more of).",
+  "lastUpdated": "2026-08-09",
+  "topScorers": [
+    { "name": "João Pedro", "club": "Chelsea", "goals": 5, "note": "Hat-trick off the bench vs Western Sydney Wanderers (Jul 28), then a brace vs AC Milan (Aug 8)" },
+    { "name": "Justin Kluivert", "club": "Bournemouth", "goals": 3, "note": "Hat-trick (2 pens + follow-up) vs Genoa (Aug 4)" },
+    { "name": "Omar Marmoush", "club": "Man City", "goals": 2, "note": "Second-half brace vs Atletico Madrid (Aug 8), both set up by Semenyo" },
+    { "name": "Yoane Wissa", "club": "Newcastle", "goals": 2, "note": "Brace off the bench vs Valencia (Aug 8)" },
+    { "name": "Alex Scott", "club": "Bournemouth", "goals": 2, "note": "Brace vs Genoa (Aug 4)" },
+    { "name": "Enes Ünal", "club": "Bournemouth", "goals": 2, "note": "Brace vs Genoa (Aug 4)" },
+    { "name": "Divin Mubama", "club": "Man City", "goals": 2, "note": "Vs Inter Milan (Aug 1) and vs K-League All Stars (Aug 5), both set up by Semenyo" },
+    { "name": "Dominic Calvert-Lewin", "club": "Leeds", "goals": 2, "note": "Brace off the bench vs Liverpool (Aug 2)" }
+  ],
+  "topAssists": [
+    { "name": "Antoine Semenyo", "club": "Man City", "assists": 4, "note": "Set up Mubama twice (Aug 1 & Aug 5), then set up Marmoush twice vs Atletico Madrid (Aug 8)" },
+    { "name": "Rio Cardines", "club": "Crystal Palace", "assists": 2, "note": "Vs Al-Ula (Jul 31)" },
+    { "name": "Christos Tzolis", "club": "Arsenal", "assists": 1, "note": "Assisted Hincapié vs Real Betis (Aug 5) — also scored on his debut vs Girona (Aug 1)" },
+    { "name": "Adrien Truffert", "club": "Bournemouth", "assists": 1, "note": "Teed up Kluivert's 3rd vs Genoa (Aug 4)" },
+    { "name": "Evann Guessand", "club": "Aston Villa", "assists": 1, "note": "Assisted Buendía vs BG Pathum United (Aug 4)" },
+    { "name": "Pedro Neto", "club": "Chelsea", "assists": 1, "note": "Crossed for João Pedro's 2nd vs AC Milan (Aug 8)" },
+    { "name": "Romeo Lavia", "club": "Chelsea", "assists": 1, "note": "Corner led to Caicedo's goal vs AC Milan (Aug 8)" },
+    { "name": "George Hemmings", "club": "Aston Villa", "assists": 1, "note": "Assisted Kamara vs BG Pathum United (Aug 4)" }
+  ],
+  "results": [
+    { "fixture": "Liverpool 2-3 Monaco", "date": "2026-08-09", "scorers": "Isak, Wirtz. Monaco: Golovin (pen), Biereth, Brunner — Iraola's first Anfield game in charge, lost after leading 2-0" },
+    { "fixture": "Arsenal 2-3 Borussia Dortmund", "date": "2026-08-09" },
+    { "fixture": "Chelsea 3-3 Johor Darul Ta'zim", "date": "2026-08-09" },
+    { "fixture": "Chelsea 3-0 AC Milan", "date": "2026-08-08", "scorers": "João Pedro 2 (header from Caicedo corner, then a Pedro Neto cross), Caicedo (volley from Lavia corner) — won the 2026 Indonesia Super Cup" },
+    { "fixture": "Man City 3-1 Atletico Madrid", "date": "2026-08-08", "scorers": "Marmoush 2 (both set up by Semenyo), Aït-Nouri — Atletico: Domínguez" },
+    { "fixture": "Valencia 1-2 Newcastle", "date": "2026-08-08", "scorers": "Wissa 2 off the bench — Matthias Jaissle's winning start as boss; Elanga stretchered off" },
+    { "fixture": "Real Betis 2-2 Bournemouth", "date": "2026-08-08" },
+    { "fixture": "Paris Saint-Germain 1-1 Man Utd", "date": "2026-08-08" },
+    { "fixture": "Leeds 2-0 RB Leipzig", "date": "2026-08-08" },
+    { "fixture": "Ipswich 3-0 Rayo Vallecano", "date": "2026-08-08" },
+    { "fixture": "Brighton 3-0 Roma", "date": "2026-08-08" },
+    { "fixture": "Coventry 3-1 Espanyol", "date": "2026-08-08" },
+    { "fixture": "Stuttgart 3-1 Everton", "date": "2026-08-08" },
+    { "fixture": "Eintracht Frankfurt 2-0 Hull", "date": "2026-08-08" },
+    { "fixture": "Sunderland 2-0 Lens", "date": "2026-08-08" },
+    { "fixture": "Spurs 1-1 Getafe", "date": "2026-08-08" },
+    { "fixture": "Rennes 1-2 Brentford", "date": "2026-08-08" },
+    { "fixture": "Udinese 1-0 Nott'm Forest", "date": "2026-08-08" },
+    { "fixture": "Barcelona 1-0 Nott'm Forest", "date": "2026-08-08" },
+    { "fixture": "Arsenal 1-3 Real Betis", "date": "2026-08-05", "scorers": "Hincapié (assist: Tzolis)" },
+    { "fixture": "Chelsea 0-1 Juventus", "date": "2026-08-05" },
+    { "fixture": "Brentford 4-1 Wycombe", "date": "2026-08-05" },
+    { "fixture": "Brighton 4-3 Strasbourg", "date": "2026-08-05" },
+    { "fixture": "Bournemouth 10-1 Genoa", "date": "2026-08-04", "scorers": "Kluivert hat-trick (2 pens + follow-up), Alex Scott 2, Ünal 2, Brooks (pen), Jebbison, Dacosta Gonzalez" },
+    { "fixture": "BG Pathum United 1-3 Aston Villa", "date": "2026-08-04", "scorers": "Buendía (assist: Guessand), Lindelöf, Kamara (assist: Hemmings) — Kamara's first game back since a January ACL injury" },
+    { "fixture": "Ipswich 1-0 Le Havre", "date": "2026-08-04", "scorers": "Akpom (assist: Fatawu)" }
+  ]
+}

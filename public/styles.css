@@ -1,0 +1,1024 @@
+:root {
+  --purple: #37003c;
+  --purple-light: #5a0a63;
+  --green: #00ff87;
+  --pink: #e90052;
+  --bg: #0d0113;
+  --card: #1a0a20;
+  --card-border: #3a1a42;
+  --text: #f4f0f6;
+  --text-dim: #b7a6bf;
+}
+
+* { box-sizing: border-box; }
+
+html { overflow-x: hidden; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  /* Safety net: if any wide element (a table, a grid) is ever added without
+     its own overflow-x:auto wrapper, this stops it from making the WHOLE
+     page scroll/drag sideways — the real cause of "feels like I'm dragging
+     the page" on mobile. Content that's too wide gets clipped at the page
+     edge instead of that, which is a far less confusing failure mode, and
+     properly wrapped content (everything using .fdr-scroll/.table-scroll)
+     is completely unaffected since those already contain their own scroll. */
+  overflow-x: hidden;
+}
+
+.hero {
+  background: radial-gradient(circle at top left, var(--purple-light), var(--purple) 60%, var(--bg));
+  padding: 48px 24px 32px;
+  text-align: center;
+  border-bottom: 3px solid var(--green);
+}
+
+.hero h1 {
+  margin: 0 0 8px;
+  font-size: 2.4rem;
+  letter-spacing: -0.5px;
+  text-shadow: 0 2px 18px rgba(0, 255, 135, 0.35);
+}
+.subtitle { color: var(--green); font-weight: 600; margin: 0; }
+
+.deadline-chip {
+  display: inline-block;
+  margin-top: 12px;
+  background: var(--pink);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+}
+.deadline-chip.deadline-soon { background: #d4222a; animation: lock-live-pulse 2s ease-in-out infinite; }
+.deadline-chip.deadline-live { background: #6b5a72; }
+
+.crest-strip {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+  opacity: 0.75;
+}
+.crest-strip img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.4));
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.crest-strip img:hover { transform: translateY(-3px) scale(1.15); opacity: 1; }
+
+
+.hof-block {
+  background: linear-gradient(0deg, #2a1f00, var(--bg) 70%);
+  border-top: 3px solid #d4af37;
+  padding: 30px 24px;
+}
+.hof-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+.hof-block h2 {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+  color: #f0d060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.hof-desc { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 14px; }
+.hof-trophy-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+.hof-trophy-chip {
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 24px;
+  padding: 7px 16px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+.hof-trophy-chip em { font-style: normal; color: #d4af37; font-weight: 800; margin-left: 4px; }
+.hof-trophy-chip.hof-top {
+  border-color: #d4af37;
+  background: rgba(212, 175, 55, 0.16);
+}
+.hof-seasons-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(212, 175, 55, 0.15);
+}
+.hof-season-chip {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.hof-season-chip .hof-s {
+  color: #d4af37;
+  font-weight: 800;
+  margin-right: 4px;
+}
+.hof-season-chip.hof-season-live {
+  border: 1px dashed var(--green);
+  color: var(--green);
+}
+.hof-season-chip.hof-season-live .hof-s { color: var(--green); }
+
+.app-shell {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 24px 24px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.nav-toggle {
+  display: none;
+  width: 100%;
+  margin: 0 0 12px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.side-nav {
+  width: 210px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: sticky;
+  top: 16px;
+}
+
+.nav-item {
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  padding: 11px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-family: inherit;
+}
+.nav-item:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
+.nav-item.active { background: var(--pink); color: white; }
+
+@media (max-width: 860px) {
+  /* .app-shell is a row flex container by default (sidebar + content side
+     by side) — this flip to column is what actually stacks nav-toggle/
+     side-nav/container vertically on mobile. Without it, .nav-toggle's own
+     unconditional width:100% (see its base rule above) makes it claim the
+     full row width as a flex item alongside .container in the SAME row;
+     since .container uses flex:1 (flex-basis:0%), the flexbox shrink
+     algorithm allocates it zero share of the negative free space and it
+     collapses to 0 width while its children (the actual page content)
+     still render at their natural size — the exact "content is there but
+     clipped/invisible past a hairline-thin column" bug this whole block
+     exists to prevent. This one declaration is load-bearing for everything
+     below it, including .container's own width:100% two lines down: that
+     rule only fixes shrink-wrapping in a COLUMN layout (where width governs
+     the cross axis) — in the default row layout it's fighting the same
+     flex-basis:0% override and does nothing on its own. */
+  .app-shell { flex-direction: column; padding: 16px 16px 0; }
+  /* Once stacked in a column, align-items:flex-start (correct for desktop's
+     row layout, so sidebar/content heights don't stretch to match) governs
+     WIDTH instead — .side-nav already had an explicit width:100% override
+     to counter this, but .container (everything else on the page) didn't,
+     so it silently shrink-wrapped to whatever its widest descendant
+     happened to be instead of filling the screen. Every downstream fix
+     (overflow-x:hidden on individual columns, flex-wrap on fixture rows)
+     was treating a symptom of this one missing rule. */
+  .container { width: 100%; }
+  .nav-toggle { display: block; }
+  .side-nav {
+    display: none;
+    width: 100%;
+    position: static;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 12px;
+  }
+  .side-nav.open { display: flex; }
+}
+
+.container {
+  flex: 1;
+  min-width: 0;
+  padding: 0 0 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.page { display: none; }
+.page.active-page { display: flex; flex-direction: column; gap: 40px; }
+
+.loading { text-align: center; color: var(--text-dim); padding: 60px 0; }
+
+section.block {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 24px;
+}
+
+section.block h2 {
+  margin: 0 0 4px;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hero-top-row h2 { margin: 0; }
+.gw-lock-select {
+  max-width: 200px;
+  font-size: 0.82rem;
+  padding: 6px 10px;
+}
+.gw-lock-select option:disabled { color: #6b5a72; }
+.past-gw-panel { display: none; }
+
+section.block .block-desc {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  margin: 0 0 18px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+
+.player-card {
+  background: linear-gradient(160deg, var(--purple-light), var(--card));
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 14px 10px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+.player-card:hover { transform: translateY(-3px); }
+
+.player-card img.photo {
+  width: 64px;
+  height: 82px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #2a1230;
+  margin-bottom: 8px;
+}
+
+.player-card .name { font-weight: 700; font-size: 0.95rem; }
+.player-card .meta { color: var(--text-dim); font-size: 0.78rem; margin-top: 2px; }
+.player-card .badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 20px;
+  height: 20px;
+}
+.player-card .stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--green);
+  font-weight: 600;
+}
+.player-card .reason {
+  margin-top: 6px;
+  font-size: 0.72rem;
+  color: var(--pink);
+}
+
+.captain-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--green);
+  color: var(--purple);
+  font-weight: 800;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.formation-tag {
+  display: inline-block;
+  background: var(--pink);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+.lock-badge { display: inline-block; }
+.lock-badge.lock-locked { background: #6b5a72; }
+.lock-badge.lock-live { background: #d4222a; animation: lock-live-pulse 2s ease-in-out infinite; }
+@keyframes lock-live-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+.fixture-table { width: 100%; border-collapse: collapse; }
+.fixture-table th, .fixture-table td {
+  text-align: left;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.9rem;
+}
+.fixture-table th { color: var(--text-dim); font-weight: 600; }
+.fixture-table img.mini-badge { width: 18px; height: 18px; vertical-align: middle; margin-right: 6px; }
+
+.diff-pill {
+  display: inline-block;
+  width: 22px; height: 22px;
+  border-radius: 6px;
+  text-align: center;
+  line-height: 22px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  margin-right: 3px;
+}
+.diff-1 { background: #0a7a3d; }
+.diff-2 { background: #0dbf5c; }
+.diff-3 { background: #7a7a7a; }
+.diff-4 { background: var(--pink); }
+.diff-5 { background: #7a0836; }
+
+.fdr-avg-pill {
+  display: inline-block;
+  min-width: 30px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: white;
+}
+
+.fdr-legend { display: inline-flex; align-items: center; gap: 4px; font-size: 0.8rem; color: var(--text-dim); }
+.fdr-legend-swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px; }
+.scroll-hint-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+  color: var(--text-dim);
+  font-size: 0.75rem;
+}
+.scroll-btn {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.scroll-btn:active { background: var(--pink); border-color: var(--pink); }
+
+.fdr-scroll {
+  overflow-x: auto;
+  margin-top: 10px;
+  /* Real-device testing burned through two explicit touch-action attempts:
+     pan-x alone made a vertical swipe over the table do nothing at all
+     (never reached the page); pan-x pan-y then made horizontal swipes get
+     swallowed by the page's own vertical scroll instead. Both are known,
+     real cross-browser touch-action disambiguation quirks, not something
+     safely fixable by guessing a third value blind. Leaving touch-action
+     at its default (auto) and relying on overflow-x:hidden on body/html
+     plus user-scalable=no in the viewport (see index.html) to kill the
+     "feels like zooming" sensation is the actually standard, broadly
+     compatible pattern most sites use for this. */
+  -webkit-overflow-scrolling: touch;
+}
+.stats-table { font-size: 0.82rem; }
+.stats-table-wide { min-width: 1400px; }
+.stats-table th, .stats-table td { padding: 6px 8px; white-space: nowrap; }
+.stats-table tbody tr:hover { background: rgba(255, 255, 255, 0.04); }
+.sortable-th { cursor: pointer; user-select: none; }
+.sortable-th:hover { color: var(--text); }
+.table-pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 12px; color: var(--text-dim); font-size: 0.85rem; }
+.table-pagination button { background: var(--card); border: 1px solid var(--card-border); color: var(--text); padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+.table-pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
+.fdr-table { min-width: 720px; }
+.fdr-table th, .fdr-table td { text-align: center; white-space: nowrap; }
+.fdr-table th:first-child, .fdr-table td:first-child { text-align: left; white-space: nowrap; }
+.fdr-cell { border-radius: 6px; font-size: 0.8rem; font-weight: 600; color: white; }
+.fdr-cell.fdr-blank { color: var(--text-dim); background: transparent; font-weight: 400; }
+.fdr-cell .win-prob { font-size: 0.7rem; font-weight: 500; opacity: 0.9; }
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 700px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+.footer {
+  text-align: center;
+  padding: 30px 20px 50px;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
+
+/* Masonry-style dashboard grid: tiles flow and pack by actual content height,
+   instead of a fixed two-column split where a short sidebar leaves a tall
+   blank gutter once its content runs out below a taller main column. */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-auto-flow: dense;
+  gap: 24px;
+  align-items: start;
+}
+.dashboard-grid .tile-full { grid-column: 1 / -1; }
+.dashboard-grid .tile-wide { grid-column: span 2; }
+@media (max-width: 720px) {
+  .dashboard-grid .tile-wide { grid-column: 1 / -1; }
+}
+
+.side-block { padding: 18px 20px; }
+.side-block h2 { font-size: 1.05rem; margin-bottom: 4px; }
+
+/* Compact list rows for de-emphasized sections (injuries, prices) */
+.list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 0.82rem;
+}
+.list-row:last-child { border-bottom: none; }
+.list-name { flex: 1; font-weight: 600; flex-shrink: 0; }
+.list-stat { color: var(--text-dim); font-size: 0.78rem; text-align: right; max-width: 55%; }
+.list-row img.mini-badge { width: 16px; height: 16px; flex-shrink: 0; }
+.list-subhead {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  margin: 12px 0 2px;
+}
+
+.setpiece-detail { color: var(--text-dim); font-size: 0.76rem; margin-top: 2px; }
+
+.fixture-swing-row { margin-bottom: 10px; }
+.fixture-swing-row .list-row { border-bottom: none; padding-bottom: 2px; }
+.fixture-swing-row .fixture-cell { padding-left: 24px; }
+
+/* Best XI pitch visual */
+.pitch {
+  background: repeating-linear-gradient(180deg, #0d6b34, #0d6b34 50px, #0a5c2c 50px, #0a5c2c 100px);
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  padding: 26px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.pitch-row {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.pitch-player {
+  width: 96px;
+  text-align: center;
+  position: relative;
+}
+.pitch-card {
+  background: rgba(13, 1, 19, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 8px 6px 7px;
+}
+.pitch-card img.photo {
+  width: 54px;
+  height: 68px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #2a1230;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  margin-bottom: 6px;
+}
+.pitch-name {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pitch-meta {
+  font-size: 0.63rem;
+  color: var(--green);
+  margin-top: 3px;
+  line-height: 1.25;
+}
+.pitch-points {
+  margin-top: 6px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 0;
+}
+.pitch-points.tbd { color: var(--text-dim); background: rgba(255, 255, 255, 0.07); }
+.pitch-points.scored { color: var(--purple); background: var(--green); }
+.pitch-player .captain-tag {
+  position: absolute;
+  top: -8px;
+  right: 12px;
+  left: auto;
+  z-index: 1;
+}
+.pitch-player .captain-tag.vc-tag {
+  background: #c9c9d4;
+  color: var(--purple);
+}
+.pitch-player .votes-tag {
+  position: absolute;
+  top: -8px;
+  left: 4px;
+  z-index: 1;
+  background: var(--purple-light);
+  color: var(--text);
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+}
+.pitch-player .votes-tag.votes-tag-fill {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-dim);
+  border-style: dashed;
+}
+
+/* Shrink pitch cards on narrow screens so a full row (up to 5 players) fits
+   on one line, matching an actual formation shape, instead of wrapping into a
+   cramped, broken-looking grid. */
+@media (max-width: 480px) {
+  .pitch { padding: 14px 5px; gap: 10px; }
+  .pitch-row { gap: 3px; flex-wrap: nowrap; }
+  .pitch-player { width: calc((100% - 12px) / 5); flex-shrink: 0; }
+  .pitch-card { padding: 3px 1px 2px; border-radius: 6px; }
+  .pitch-card img.photo { width: 100%; height: auto; aspect-ratio: 4 / 5; border-radius: 4px; margin-bottom: 2px; border-width: 1px; }
+  .pitch-name { font-size: 0.52rem; white-space: normal; }
+  .pitch-meta { font-size: 0.4rem; margin-top: 1px; }
+  .pitch-points { font-size: 0.4rem; margin-top: 2px; padding: 1px 0; border-radius: 3px; }
+  .pitch-player .captain-tag { top: -6px; right: 1px; font-size: 0.55rem; padding: 1px 3px; }
+  .bench-row .pitch-row { flex-wrap: wrap; }
+  .bench-row .pitch-player { width: calc((100% - 9px) / 4); }
+}
+
+.bench-row { margin-top: 4px; }
+.bench-row .pitch-row { background: rgba(255,255,255,0.03); border-radius: 10px; padding: 10px; }
+
+.captaincy-box {
+  margin-top: 18px;
+  background: rgba(0, 255, 135, 0.06);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.fixtures-grid { display: flex; flex-direction: column; gap: 6px; }
+.fixture-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: none;
+  width: 100%;
+  color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+.fixture-row:hover { background: rgba(255, 255, 255, 0.06); }
+.fixture-row .vs { color: var(--text-dim); font-weight: 400; margin: 0 4px; }
+.fixture-row .kickoff { margin-left: auto; color: var(--text-dim); font-weight: 400; font-size: 0.78rem; }
+.fixture-row .score { color: var(--green); font-weight: 800; margin-left: auto; padding-right: 10px; }
+.h2h-player { color: var(--text-dim, #9a94a8); font-size: 0.82rem; }
+.fixture-row-wrap { display: flex; flex-direction: column; }
+.fixture-detail {
+  display: none;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.fixture-detail.open { display: block; }
+.fixture-detail .stat-line { margin-bottom: 4px; }
+.fixture-detail .stat-line strong { color: var(--text); }
+
+/* Analysis tools: tabs */
+.tools-block { padding-bottom: 28px; }
+.tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 20px;
+  padding-bottom: 0;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.85rem;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+}
+.tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.fixtab-btn {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  color: var(--text-dim);
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.fixtab-btn.active { color: white; background: var(--pink); border-color: var(--pink); }
+
+.xi-chip {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  margin: 2px 4px 2px 0;
+}
+
+.tool-input {
+  background: var(--bg);
+  border: 1px solid var(--card-border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  width: 100%;
+  max-width: 360px;
+}
+
+.picker-row { position: relative; margin-bottom: 10px; }
+.search-results {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-width: 360px;
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.search-item { padding: 8px 12px; font-size: 0.85rem; cursor: pointer; }
+.search-item:hover { background: var(--purple-light); }
+
+.compare-tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+  min-height: 20px;
+}
+.tray-chip {
+  background: var(--purple-light);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 5px 8px 5px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tray-chip button {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0 2px;
+}
+.tray-chip button:hover { color: var(--pink); }
+
+.slider-label {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin: 6px 0 18px;
+}
+.slider-label input[type="range"] { display: block; width: 100%; max-width: 300px; margin-top: 6px; accent-color: var(--green); }
+.slider-label span { color: var(--green); font-weight: 700; }
+
+.compare-pick {
+  background: rgba(0, 255, 135, 0.08);
+  border: 1px solid var(--green);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+}
+.rule-note { color: var(--text-dim); font-size: 0.72rem; margin-top: 4px; }
+
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.compare-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 420px; }
+.compare-table th, .compare-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--card-border);
+  text-align: center;
+  white-space: nowrap;
+}
+.compare-table td:first-child, .compare-table th:first-child {
+  text-align: left;
+  color: var(--text-dim);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.compare-table .fixture-cell { white-space: normal; text-align: left; }
+.compare-table td.cmp-best { background: rgba(0, 255, 135, 0.1); color: var(--green); font-weight: 700; }
+.compare-table td.cmp-worst { background: rgba(233, 0, 82, 0.1); color: var(--pink); font-weight: 700; }
+
+.compare-cards-row { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px; }
+.compare-card {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  cursor: pointer;
+}
+.compare-card-photo { width: 56px; height: 72px; object-fit: cover; border-radius: 8px; margin: 0 auto 8px; display: block; }
+.compare-card-photo.badge-photo { width: 44px; height: 44px; border-radius: 50%; }
+.compare-card-name { font-weight: 700; font-size: 0.95rem; }
+.compare-card-meta { color: var(--text-dim); font-size: 0.78rem; margin-top: 2px; }
+.compare-card-pills { display: flex; justify-content: center; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.compare-card-pills .formation-tag { font-size: 0.72rem; padding: 3px 8px; }
+.compare-card-fixtures { display: flex; margin-top: 10px; justify-content: center; flex-wrap: wrap; gap: 4px; }
+.compare-photo {
+  width: 40px; height: 52px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin: 0 auto 4px;
+  display: block;
+}
+.badge-photo { width: 32px; height: 32px; border-radius: 50%; }
+.fixture-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  margin: 2px 4px 2px 0;
+}
+.win-prob {
+  color: var(--text-dim, #9a94a8);
+  font-size: 0.68rem;
+}
+.rating-table td:first-child { color: var(--text); font-weight: 600; }
+.rating-table td:last-child { text-align: right; color: var(--green); font-weight: 700; }
+
+/* ---------- FPL AI chat widget ---------- */
+.chat-widget {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  font-family: inherit;
+}
+.chat-toggle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, var(--green), #00c46c);
+  color: var(--purple);
+  font-size: 24px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.chat-toggle:hover { transform: scale(1.05); }
+.chat-panel[hidden] {
+  display: none;
+}
+.chat-panel {
+  position: absolute;
+  bottom: 68px;
+  right: 0;
+  width: 320px;
+  max-width: calc(100vw - 40px);
+  height: 420px;
+  max-height: calc(100vh - 120px);
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.chat-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 14px;
+  background: var(--purple);
+  color: var(--text);
+  font-weight: 700;
+}
+.chat-panel-header button {
+  background: none;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+}
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chat-msg {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  max-width: 88%;
+  white-space: pre-wrap;
+}
+.chat-msg-bot {
+  background: var(--purple-light);
+  color: var(--text);
+  align-self: flex-start;
+}
+.chat-msg-user {
+  background: var(--green);
+  color: var(--purple);
+  align-self: flex-end;
+  font-weight: 600;
+}
+.chat-msg-error {
+  background: transparent;
+  border: 1px solid var(--pink);
+  color: var(--pink);
+  align-self: flex-start;
+}
+.chat-form {
+  display: flex;
+  gap: 6px;
+  padding: 10px;
+  border-top: 1px solid var(--card-border);
+}
+.chat-input-wrap { position: relative; flex: 1; }
+.chat-form input {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--card-border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+.chat-suggest {
+  bottom: 100%;
+  top: auto;
+  margin-bottom: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+.chat-suggest:empty { display: none; border: none; }
+.chat-form button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: var(--green);
+  color: var(--purple);
+  font-weight: 700;
+  cursor: pointer;
+}
+.chat-form button:disabled { opacity: 0.5; cursor: not-allowed; }
+@media (max-width: 480px) {
+  .chat-panel { width: calc(100vw - 40px); }
+}
+
+/* ---------- Player stat modal (Best XI + Differentials cards) ---------- */
+.pitch-player, .player-card { cursor: pointer; }
+.player-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.player-modal-backdrop[hidden] { display: none; }
+.player-modal {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  max-width: 360px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px 20px 20px;
+  position: relative;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.player-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+.player-modal-head { text-align: center; }
+.player-modal-head img.photo { width: 90px; height: auto; margin: 0 auto; }
+.player-modal-head .name { font-size: 1.25rem; font-weight: 800; margin-top: 8px; }
+.player-modal-head .meta { color: var(--text-dim); font-size: 0.85rem; margin-top: 2px; }
+.player-modal-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 18px;
+}
+.player-modal-stat {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+.player-modal-stat .val { font-size: 1.3rem; font-weight: 800; color: var(--green); }
+.player-modal-stat .lbl { font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.03em; margin-top: 2px; }
+.player-modal-fixtures { margin-top: 16px; text-align: center; }

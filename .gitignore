@@ -1,0 +1,5 @@
+# Local Cloudflare Wrangler state
+.wrangler
+node_modules
+.dev.vars
+.DS_Store
