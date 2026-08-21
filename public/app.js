@@ -379,10 +379,10 @@ function h2hFixturesShellHTML() {
       <h3 style="color:var(--pink);margin-top:6px;margin-bottom:8px;">H2H Fixtures</h3>
       <select id="h2h-gw-select" class="tool-input"></select>
       <div id="h2h-fixtures-list" style="margin-top:14px;"></div>
-      <h3 style="color:var(--green);margin-top:24px;margin-bottom:8px;">🏅 Inferno 14 League — Classic Standings</h3>
-      <div id="league-standings-list"></div>
       <h3 style="color:var(--pink);margin-top:24px;margin-bottom:8px;">⚔️ Inferno 14 H2H — League Table</h3>
       <div id="h2h-standings-list"></div>
+      <h3 style="color:var(--green);margin-top:24px;margin-bottom:8px;">🏅 Inferno 14 League — Classic Standings</h3>
+      <div id="league-standings-list"></div>
     </section>
   `;
 }
