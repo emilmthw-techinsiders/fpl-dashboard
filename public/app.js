@@ -424,14 +424,31 @@ function renderH2HFixtures(gwId) {
     list.innerHTML = '<p class="block-desc">Not generated yet — check back once this gameweek\'s schedule is live.</p>';
     return;
   }
+  // Dedicated grid layout, not the generic single-line .fixture-row it used
+  // to reuse — H2H team names are free-text, user-chosen fantasy team names
+  // (real example: "Skibidi Red Devils", "Unal mudiyath thambi"), routinely
+  // much longer than the short real-club names (e.g. "ARS") that
+  // .fixture-row was actually designed for. Forcing name+player+score,
+  // twice, into one flex line caused exactly the cramped, unpredictably-
+  // wrapped mess a real device screenshot caught. Three explicit grid
+  // columns (team | score | team) let each side wrap within its OWN column
+  // instead of the whole row reflowing unpredictably, and collapses to a
+  // stacked single column below 480px (see CSS) where even one column is
+  // tight for these names.
   list.innerHTML = matches.map((m) => `
-    <div class="fixture-row-wrap">
-      <div class="fixture-row" style="cursor:default;">
-        <strong>${m.home.name}</strong> <span class="h2h-player">(${m.home.playerName})</span>
-        ${typeof m.home.points === 'number' ? `<span class="score">${m.home.points}</span>` : ''}
+    <div class="h2h-match-card">
+      <div class="h2h-team h2h-team-home">
+        <span class="h2h-team-name">${m.home.name}</span>
+        <span class="h2h-player">${m.home.playerName}</span>
+      </div>
+      <div class="h2h-score">
+        <span class="h2h-score-num">${typeof m.home.points === 'number' ? m.home.points : '–'}</span>
         <span class="vs">v</span>
-        ${typeof m.away.points === 'number' ? `<span class="score">${m.away.points}</span>` : ''}
-        <strong>${m.away.name}</strong> <span class="h2h-player">(${m.away.playerName})</span>
+        <span class="h2h-score-num">${typeof m.away.points === 'number' ? m.away.points : '–'}</span>
+      </div>
+      <div class="h2h-team h2h-team-away">
+        <span class="h2h-team-name">${m.away.name}</span>
+        <span class="h2h-player">${m.away.playerName}</span>
       </div>
     </div>
   `).join('');
