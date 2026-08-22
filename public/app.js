@@ -529,10 +529,22 @@ function renderFixturesList(gwId) {
     return;
   }
   list.innerHTML = gw.fixtures.map((f, i) => {
-    const live = f.started && !f.finished;
-    const scoreTag = (f.finished || live) && f.homeScore != null
+    // FPL's own official `finished` flag only flips once bonus points are
+    // fully confirmed, which can lag an hour+ behind the match itself
+    // actually ending — `finishedProvisional` (true once the match is
+    // over, regardless of bonus-point confirmation) is the real "is this
+    // still being played" signal; without it, a match sitting in that gap
+    // shows LIVE long after full time.
+    const over = f.finished || f.finishedProvisional;
+    const live = f.started && !over;
+    const scoreTag = (over || live) && f.homeScore != null
       ? `<span class="score">${f.homeScore}-${f.awayScore}</span>`
       : '';
+    const statusTag = live
+      ? '<span class="kickoff" style="color:#d4222a;font-weight:700;">🔴 LIVE</span>'
+      : over
+        ? '<span class="kickoff" style="color:var(--green);font-weight:700;">FT</span>'
+        : `<span class="kickoff">${fmtKickoff(f.kickoff)}</span>`;
     return `
     <div class="fixture-row-wrap">
       <button class="fixture-row" data-idx="${i}" type="button">
@@ -540,7 +552,7 @@ function renderFixturesList(gwId) {
         <span class="vs">v</span>
         ${f.away}<img class="mini-badge" src="${f.awayBadge}" />
         ${scoreTag}
-        ${live ? '<span class="kickoff" style="color:#d4222a;font-weight:700;">🔴 LIVE</span>' : `<span class="kickoff">${fmtKickoff(f.kickoff)}</span>`}
+        ${statusTag}
       </button>
       <div class="fixture-detail" id="fixture-detail-${i}"></div>
     </div>
@@ -566,7 +578,11 @@ function renderFixturesList(gwId) {
             <span class="stat-chips">${entries.map((en) => `<span class="stat-chip">${en}</span>`).join('')}</span>
           </div>`).join('')
         : null;
-      if (f.finished) {
+      // Same finished-vs-finishedProvisional distinction as the row badge
+      // above — a provisionally-finished match is genuinely over, just
+      // still waiting on FPL's own bonus-point confirmation, so it gets
+      // the same "finished" detail view, not the live-in-progress one.
+      if (f.finished || f.finishedProvisional) {
         detail.innerHTML = statHTML || '<p class="block-desc">Match finished, no stat breakdown recorded.</p>';
       } else if (f.started) {
         // Real events as of the last daily refresh — this site isn't a
