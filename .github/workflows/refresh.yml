@@ -1,0 +1,41 @@
+name: Refresh Inferno FPL data
+
+# Runs the full refresh pipeline every 5 minutes, same cadence as the
+# Cloudflare cron worker this replaces as the primary scheduler - see
+# scripts/gh-actions-refresh.mjs for why this moved here (Cloudflare's
+# Free Workers plan has an unconfigurable CPU-time ceiling this pipeline
+# kept exceeding; GitHub Actions has no equivalent limit for a job this
+# short, and this repo is public so Actions minutes are free and
+# unlimited).
+#
+# GitHub does not guarantee scheduled workflows fire at the exact minute
+# during high platform load - a few extra minutes of delay is possible
+# and is an accepted tradeoff for no longer fighting a hard CPU wall.
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run refresh
+        run: node scripts/gh-actions-refresh.mjs
+        env:
+          # Not secrets - the KV namespace id is already committed in plain
+          # sight in cron-worker/wrangler.toml, and an account id is not
+          # usable for anything without the API token, which IS a real
+          # secret below. Hardcoding these two here means the engineer only
+          # has to add the genuinely sensitive secrets, not every ID.
+          CLOUDFLARE_ACCOUNT_ID: eb5f3953f8d3713b5282f726c7faf6b5
+          CLOUDFLARE_KV_NAMESPACE_ID: 5f69f4ededf24cb89c07ee611c9d5fb4
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          FOOTBALLDATA_API_KEY: ${{ secrets.FOOTBALLDATA_API_KEY }}
