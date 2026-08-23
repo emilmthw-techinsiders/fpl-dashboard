@@ -3,6 +3,26 @@ const DATA_URL = params.get('demo') ? 'sample-data.json' : '/get-data';
 
 const STATE = { data: null };
 
+// Real cost cut (2026-08-23, part of the season-long CPU/payload gatekeeper
+// work): the backend used to send a full ~65-char badge URL and ~75-char
+// photo URL for every one of ~600 players in allPlayers alone, even though
+// every single one is built from the exact same two template strings plus
+// a short code. Sending just the code and reconstructing the URL here cuts
+// real, permanent weight off the payload the cron worker has to
+// JSON.stringify and write on every 5-minute tick, all season.
+const BADGE_BASE = 'https://resources.premierleague.com/premierleague/badges/70';
+const PHOTO_BASE = 'https://resources.premierleague.com/premierleague/photos/players/110x140';
+function teamBadgeUrl(teamCode) { return teamCode ? `${BADGE_BASE}/t${teamCode}.png` : ''; }
+function playerPhotoUrl(photoCode) { return photoCode ? `${PHOTO_BASE}/p${photoCode}.png` : ''; }
+// GW1's own locked/frozen player cards (see history[gw].lockedBestXI) were
+// captured before this compaction existed and carry the OLD shape (a full
+// `teamBadge`/`photo` URL string) permanently — GW1 can never be
+// recomputed, so this has to keep accepting both shapes forever, not just
+// during a one-time transition window. New-shape (`teamCode`/`photoCode`)
+// wins when present; old-shape full URLs are used as-is otherwise.
+function playerBadgeSrc(p) { return p.teamCode ? teamBadgeUrl(p.teamCode) : (p.teamBadge || ''); }
+function playerPhotoSrc(p) { return p.photoCode ? playerPhotoUrl(p.photoCode) : (p.photo || ''); }
+
 const FALLBACK_PHOTO =
   'data:image/svg+xml;utf8,' +
   encodeURIComponent(
@@ -49,7 +69,7 @@ window.handlePhotoError = function handlePhotoError(img) {
 };
 
 function photoImg(p, cls = 'photo') {
-  return `<img class="${cls}" src="${p.photo}" alt="${p.name}" data-fullname="${p.fullName}" onerror="handlePhotoError(this)" />`;
+  return `<img class="${cls}" src="${playerPhotoSrc(p)}" alt="${p.name}" data-fullname="${p.fullName}" onerror="handlePhotoError(this)" />`;
 }
 
 function pitchPlayerHTML(p, isCaptain, pointsText = 'TBD', note = null, isViceCaptain = false) {
@@ -82,7 +102,7 @@ function pitchPlayerHTML(p, isCaptain, pointsText = 'TBD', note = null, isViceCa
 function playerCardHTML(p, { showReason = false, showStat = null } = {}) {
   return `
     <div class="player-card" data-player-id="${p.id}">
-      ${p.teamBadge ? `<img class="badge" src="${p.teamBadge}" alt="${p.team}" />` : ''}
+      ${playerBadgeSrc(p) ? `<img class="badge" src="${playerBadgeSrc(p)}" alt="${p.team}" />` : ''}
       ${photoImg(p)}
       <div class="name">${p.name}</div>
       <div class="meta">${p.position} · ${p.team} · £${p.price}m</div>
@@ -95,7 +115,7 @@ function playerCardHTML(p, { showReason = false, showStat = null } = {}) {
 function listRowHTML(p, statHTML) {
   return `
     <div class="list-row">
-      ${p.teamBadge ? `<img class="mini-badge" src="${p.teamBadge}" alt="${p.team}" />` : ''}
+      ${playerBadgeSrc(p) ? `<img class="mini-badge" src="${playerBadgeSrc(p)}" alt="${p.team}" />` : ''}
       <span class="list-name">${p.name}</span>
       <span class="list-stat">${statHTML}</span>
     </div>
@@ -330,7 +350,7 @@ function bestXIHTML(data) {
             const reason = p.reason || (p.epNext != null ? `xPts ${parseFloat(p.epNext).toFixed(1)}` : 'Backup captaincy option');
             return `
             <div class="list-row">
-              ${p.teamBadge ? `<img class="mini-badge" src="${p.teamBadge}" alt="${p.team}" />` : ''}
+              ${playerBadgeSrc(p) ? `<img class="mini-badge" src="${playerBadgeSrc(p)}" alt="${p.team}" />` : ''}
               <span class="list-name">${role === 'Captain' ? '⭐ ' : '🅱️ '}${p.name} <span style="color:var(--text-dim);font-weight:400;">(${role})</span></span>
               <span class="list-stat">${reason}</span>
             </div>
@@ -968,7 +988,7 @@ function renderStatsPerGwTable() {
     <tbody>
       ${pageRows.map((p) => `
         <tr data-player-id="${p.id}" style="cursor:pointer;">
-          <td><img class="mini-badge" src="${p.teamBadge}" />${p.name} <span class="block-desc">${p.team}·${p.position}</span></td>
+          <td><img class="mini-badge" src="${playerBadgeSrc(p)}" />${p.name} <span class="block-desc">${p.team}·${p.position}</span></td>
           <td>${totalOf(p)}</td>
           ${gwIds.map((gw) => {
             const pts = p.gwPoints?.[gw];
@@ -1060,7 +1080,7 @@ function renderPlayerStatsTable() {
     <tbody>
       ${pageRows.map((p) => `
         <tr data-player-id="${p.id}" style="cursor:pointer;">
-          <td><img class="mini-badge" src="${p.teamBadge}" />${p.name} <span class="block-desc">${p.team}·${p.position}</span></td>
+          <td><img class="mini-badge" src="${playerBadgeSrc(p)}" />${p.name} <span class="block-desc">${p.team}·${p.position}</span></td>
           <td>${p.ownership.toFixed(1)}%</td>
           <td>${p.apps}</td>
           <td>${p.minsPerApp}</td>
