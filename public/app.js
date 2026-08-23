@@ -283,7 +283,19 @@ function bestXIHTML(data) {
   const livePointsById = activeEntry && activeEntry.phase === 'live' && Array.isArray(activeEntry.xiPlayers)
     ? Object.fromEntries(activeEntry.xiPlayers.map((p) => [p.id, p.points]))
     : null;
-  const pointsFor = (p) => (livePointsById && livePointsById[p.id] != null ? String(livePointsById[p.id]) : 'TBD');
+  // Real bug caught live (2026-08-23): the total score above already
+  // doubles whoever holds the armband (see armbandId in lib/history.mjs's
+  // resolveEntry — vice-captain gets it instead if the captain didn't
+  // play), but this per-card figure was showing the same player's RAW,
+  // un-doubled points — a captain who'd actually contributed 4 to that
+  // total showed "2 pts" on their own card, silently inconsistent with
+  // the number right above it.
+  const armbandId = activeEntry?.armbandId ?? cap.id;
+  const pointsFor = (p) => {
+    if (!livePointsById || livePointsById[p.id] == null) return 'TBD';
+    const raw = livePointsById[p.id];
+    return String(p.id === armbandId ? raw * 2 : raw);
+  };
   const completedEntries = history.filter((e) => e.status === 'complete');
 
   const gwOptions = (data.gameweeks || []).map((g) => {
@@ -327,10 +339,10 @@ function bestXIHTML(data) {
         <span class="formation-tag" style="background:var(--purple-light);">Total points: ${totalPointsText}</span>
         ${lockBadgeHTML(activeEntry)}
         <div class="pitch">
-          <div class="pitch-row">${rows.gkp.map((p) => pitchPlayerHTML(p, p.id === cap.id, pointsFor(p), null, p.id === xi.viceCaptain?.id)).join('')}</div>
-          <div class="pitch-row">${rows.def.map((p) => pitchPlayerHTML(p, p.id === cap.id, pointsFor(p), null, p.id === xi.viceCaptain?.id)).join('')}</div>
-          <div class="pitch-row">${rows.mid.map((p) => pitchPlayerHTML(p, p.id === cap.id, pointsFor(p), null, p.id === xi.viceCaptain?.id)).join('')}</div>
-          <div class="pitch-row">${rows.fwd.map((p) => pitchPlayerHTML(p, p.id === cap.id, pointsFor(p), null, p.id === xi.viceCaptain?.id)).join('')}</div>
+          <div class="pitch-row">${rows.gkp.map((p) => pitchPlayerHTML(p, p.id === cap.id, pointsFor(p), p.id === armbandId && livePointsById ? '×2' : null, p.id === xi.viceCaptain?.id)).join('')}</div>
+          <div class="pitch-row">${rows.def.map((p) => pitchPlayerHTML(p, p.id === cap.id, pointsFor(p), p.id === armbandId && livePointsById ? '×2' : null, p.id === xi.viceCaptain?.id)).join('')}</div>
+          <div class="pitch-row">${rows.mid.map((p) => pitchPlayerHTML(p, p.id === cap.id, pointsFor(p), p.id === armbandId && livePointsById ? '×2' : null, p.id === xi.viceCaptain?.id)).join('')}</div>
+          <div class="pitch-row">${rows.fwd.map((p) => pitchPlayerHTML(p, p.id === cap.id, pointsFor(p), p.id === armbandId && livePointsById ? '×2' : null, p.id === xi.viceCaptain?.id)).join('')}</div>
         </div>
         <div class="bench-row">
           <div class="list-subhead">Subs (within budget) — reserve picks, not part of the 3-way vote</div>
