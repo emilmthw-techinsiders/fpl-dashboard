@@ -186,13 +186,22 @@ function nextRefreshTime() {
   });
 }
 
-// If the last refresh is older than ~20 minutes (four missed 5-minute
-// ticks — a normal single missed run isn't flagged), the cron has likely
-// failed silently — surface that instead of quietly serving stale data
-// forever.
+// Real false-alarm bug caught live (2026-08-24): this was 20 minutes,
+// calibrated back when Cloudflare's 5-minute cron was the only scheduler
+// and a 20-minute gap genuinely meant 4 missed ticks in a row. Since
+// GitHub Actions became a second, redundant scheduler (see
+// .github/workflows/refresh.yml — added specifically to survive
+// Cloudflare's Free-plan CPU limit), its own schedule trigger has real,
+// confirmed gaps well past 20 minutes even when working completely
+// normally (measured directly from run history: most gaps 15-30 min, but
+// genuine outliers up to ~99 min are a known GitHub Actions
+// characteristic, not a failure). 60 minutes comfortably covers the normal
+// range from either scheduler without crying wolf on routine variance,
+// while still surfacing a genuinely broken refresh within the hour
+// instead of silently serving stale data indefinitely.
 function isStale(iso) {
   if (!iso) return true;
-  return (Date.now() - new Date(iso).getTime()) > 20 * 60 * 1000;
+  return (Date.now() - new Date(iso).getTime()) > 60 * 60 * 1000;
 }
 
 // ---------- Static info sections (best XI, differentials, fixtures, sidebar) ----------
