@@ -213,6 +213,25 @@ function isStale(iso) {
 // (fantasyfootballscout.co.uk, premierleague.com/en/news/*, etc.) — those
 // are copyrighted editorial writeups, not a public data feed. This is
 // original text grounded in real structured facts instead.
+// Real gap flagged by the user (2026-08-26): early in a gameweek, before a
+// club's own pre-match press conference has actually happened (managers
+// typically hold these 1-2 days out, not further ahead), "no fresh injury
+// concerns" only means nothing NEW has been officially reported YET — not
+// that the squad is confirmed fully fit. Computed from the real kickoff
+// timestamp at render time (not baked into the cached AI text), so it
+// stays accurate no matter how long this result sits around, and clears
+// itself automatically once within the real pre-match window — no manual
+// action needed, the same scheduled refresh that already regenerates this
+// content will pick up real news the moment a club actually reports it.
+const PRESSER_WINDOW_HOURS = 48;
+function pressConferenceCaveat(kickoffIso) {
+  if (!kickoffIso) return '';
+  const hoursOut = (new Date(kickoffIso).getTime() - Date.now()) / 3600000;
+  if (hoursOut <= PRESSER_WINDOW_HOURS) return '';
+  const daysOut = Math.round(hoursOut / 24);
+  return `<p class="rule-note" style="margin-bottom:8px;">⏳ This club's own pre-match press conference likely hasn't happened yet (kickoff is still ~${daysOut} day${daysOut === 1 ? '' : 's'} away) — the status below is the latest officially reported so far, not final confirmation. Updates automatically as real news comes in.</p>`;
+}
+
 function teamNewsCardHTML(team, news) {
   const summary = news?.newsSummary || 'No team news generated yet — check back after the next daily refresh.';
   const xi = news?.predictedXI || [];
@@ -220,6 +239,7 @@ function teamNewsCardHTML(team, news) {
     <section class="block side-block">
       <h2><img class="mini-badge" src="${team.badge}" alt="${team.shortName}" />${team.name}</h2>
       ${news?.nextFixture ? `<p class="block-desc" style="margin-bottom:8px;">Next: ${news.nextFixture}</p>` : ''}
+      ${pressConferenceCaveat(news?.kickoff)}
       <p class="block-desc" style="margin-bottom:10px;">${summary}</p>
       ${xi.length ? `
         <div class="list-subhead">Predicted XI</div>
