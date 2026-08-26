@@ -875,13 +875,39 @@ function priceWatchHTML(data) {
   return `
     <section class="block side-block">
       <h2>💰 Price Watch</h2>
+      <p class="block-desc">Predicted moves — ranked by this gameweek's net transfer momentum, before FPL's overnight price update actually happens.</p>
       ${!pw.active
         ? '<p class="block-desc">Activates once the season starts and transfers kick in.</p>'
         : `
           <div class="list-subhead" style="color:var(--green)">Likely risers</div>
-          ${pw.risers.map((p) => listRowHTML(p, `+${p.netTransfers.toLocaleString()}`)).join('')}
+          ${pw.risers.map((p) => listRowHTML(p, `£${p.price}m · +${p.netTransfers.toLocaleString()}`)).join('')}
           <div class="list-subhead" style="color:var(--pink)">Likely fallers</div>
-          ${pw.fallers.map((p) => listRowHTML(p, `${p.netTransfers.toLocaleString()}`)).join('')}
+          ${pw.fallers.map((p) => listRowHTML(p, `£${p.price}m · ${p.netTransfers.toLocaleString()}`)).join('')}
+        `
+      }
+    </section>
+  `;
+}
+
+// Real, already-happened price moves (FPL's own cost_change_event) —
+// distinct from Price Watch above, which predicts a move BEFORE it
+// happens from transfer momentum. This shows what's actually already
+// moved, so a rise/fall shown here is real and final for today, not a
+// forecast.
+function priceChangesHTML(data) {
+  const pc = data.priceChanges;
+  if (!pc) return '';
+  return `
+    <section class="block side-block">
+      <h2>📈 Price Changes</h2>
+      <p class="block-desc">Real moves already applied by FPL's overnight price update — not a prediction.</p>
+      ${!pc.active
+        ? '<p class="block-desc">No price changes yet today.</p>'
+        : `
+          <div class="list-subhead" style="color:var(--green)">Risen today</div>
+          ${pc.risers.length ? pc.risers.map((p) => listRowHTML(p, `£${p.price}m · +£${(p.costChangeEvent / 10).toFixed(1)}m`)).join('') : '<p class="block-desc">None today.</p>'}
+          <div class="list-subhead" style="color:var(--pink)">Fallen today</div>
+          ${pc.fallers.length ? pc.fallers.map((p) => listRowHTML(p, `£${p.price}m · -£${Math.abs(p.costChangeEvent / 10).toFixed(1)}m`)).join('') : '<p class="block-desc">None today.</p>'}
         `
       }
     </section>
@@ -1863,6 +1889,7 @@ function render(data) {
     <div class="page" data-page="watchlist">
       <div class="dashboard-grid">
         ${priceWatchHTML(data)}
+        ${priceChangesHTML(data)}
         ${newSigningsHTML(data)}
         ${injuryWatchHTML(data)}
       </div>
