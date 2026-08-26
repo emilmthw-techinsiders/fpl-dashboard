@@ -913,9 +913,8 @@ function priceWatchHTML(data) {
   const pw = data.priceWatch;
   return `
     <section class="block side-block">
-      <h2>💰 Price Watch</h2>
+      <h2>💰 Price Watch <span class="formation-tag" style="vertical-align:middle;">⏱ ${nextPriceUpdateTime()}</span></h2>
       <p class="block-desc">Predicted moves — ranked by this gameweek's net transfer momentum, before FPL's overnight price update actually happens.</p>
-      <p class="rule-note" style="margin-bottom:8px;">⏱ Next price update: ${nextPriceUpdateTime()}</p>
       ${!pw.active
         ? '<p class="block-desc">Activates once the season starts and transfers kick in.</p>'
         : `
@@ -939,7 +938,7 @@ function priceChangesHTML(data) {
   if (!pc) return '';
   return `
     <section class="block side-block">
-      <h2>📈 Price Changes</h2>
+      <h2>📈 Price Changes <span class="formation-tag" style="vertical-align:middle;">⏱ ${nextPriceUpdateTime()}</span></h2>
       <p class="block-desc">Real moves already applied by FPL's overnight price update — not a prediction.</p>
       ${!pc.active
         ? '<p class="block-desc">No price changes yet today.</p>'
