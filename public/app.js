@@ -938,7 +938,7 @@ function priceChangesHTML(data) {
   if (!pc) return '';
   return `
     <section class="block side-block">
-      <h2>📈 Price Changes <span class="formation-tag" style="vertical-align:middle;">⏱ ${nextPriceUpdateTime()}</span></h2>
+      <h2>📈 Price Changes</h2>
       <p class="block-desc">Real moves already applied by FPL's overnight price update — not a prediction.</p>
       ${!pc.active
         ? '<p class="block-desc">No price changes yet today.</p>'
@@ -1926,6 +1926,10 @@ function render(data) {
       </div>
     </div>
     <div class="page" data-page="watchlist">
+      <section class="block tile-full" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <h2 style="margin:0;">⏳ Next price change window</h2>
+        <span class="formation-tag" style="margin:0;">⏱ ${nextPriceUpdateTime()}</span>
+      </section>
       <div class="dashboard-grid">
         ${priceWatchHTML(data)}
         ${priceChangesHTML(data)}
