@@ -913,7 +913,7 @@ function priceWatchHTML(data) {
   const pw = data.priceWatch;
   return `
     <section class="block side-block">
-      <h2>💰 Price Watch <span class="formation-tag" style="vertical-align:middle;">⏱ ${nextPriceUpdateTime()}</span></h2>
+      <h2>💰 Price Watch</h2>
       <p class="block-desc">Predicted moves — ranked by this gameweek's net transfer momentum, before FPL's overnight price update actually happens.</p>
       ${!pw.active
         ? '<p class="block-desc">Activates once the season starts and transfers kick in.</p>'
