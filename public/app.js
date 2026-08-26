@@ -186,6 +186,25 @@ function nextRefreshTime() {
   });
 }
 
+// Real rule for the 2026/27 season (confirmed live, 2026-08-26): FPL price
+// changes apply at midnight UK time — changed this season from the old
+// 1:30am GMT / 2:30am BST cutoff. Computed via a locale round-trip rather
+// than a hardcoded UTC offset, since UK clocks shift between GMT and BST
+// across the season and a fixed offset would drift wrong twice a year.
+function nextPriceUpdateTime() {
+  const now = new Date();
+  const londonNow = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/London' }));
+  const nextMidnightLondon = new Date(londonNow);
+  nextMidnightLondon.setHours(24, 0, 0, 0);
+  const offsetMs = now.getTime() - londonNow.getTime();
+  const next = new Date(nextMidnightLondon.getTime() + offsetMs);
+  const msLeft = next.getTime() - now.getTime();
+  const hoursLeft = Math.floor(msLeft / 3600000);
+  const minsLeft = Math.round((msLeft % 3600000) / 60000);
+  const timeText = next.toLocaleString(undefined, { hour: '2-digit', minute: '2-digit' });
+  return `${timeText} (in ${hoursLeft}h ${minsLeft}m)`;
+}
+
 // Real false-alarm bug caught live (2026-08-24): this was 20 minutes,
 // calibrated back when Cloudflare's 5-minute cron was the only scheduler
 // and a 20-minute gap genuinely meant 4 missed ticks in a row. Since
@@ -896,6 +915,7 @@ function priceWatchHTML(data) {
     <section class="block side-block">
       <h2>💰 Price Watch</h2>
       <p class="block-desc">Predicted moves — ranked by this gameweek's net transfer momentum, before FPL's overnight price update actually happens.</p>
+      <p class="rule-note" style="margin-bottom:8px;">⏱ Next price update: ${nextPriceUpdateTime()}</p>
       ${!pw.active
         ? '<p class="block-desc">Activates once the season starts and transfers kick in.</p>'
         : `
