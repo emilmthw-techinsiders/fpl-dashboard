@@ -1,19 +1,26 @@
 name: Refresh Inferno FPL data
 
-# Runs the full refresh pipeline every 5 minutes, same cadence as the
-# Cloudflare cron worker this replaces as the primary scheduler - see
-# scripts/gh-actions-refresh.mjs for why this moved here (Cloudflare's
-# Free Workers plan has an unconfigurable CPU-time ceiling this pipeline
-# kept exceeding; GitHub Actions has no equivalent limit for a job this
-# short, and this repo is public so Actions minutes are free and
-# unlimited).
-#
-# GitHub does not guarantee scheduled workflows fire at the exact minute
-# during high platform load - a few extra minutes of delay is possible
-# and is an accepted tradeoff for no longer fighting a hard CPU wall.
+# Real, confirmed finding (2026-08-30): a */5 schedule here is NOT reliably
+# honored by GitHub's scheduler for a frequent cron like this - measured
+# directly from real run history, gaps between actual firings grew from
+# ~15-30 min (when this was first set up) to 3-11+ hours over a few days.
+# This matches GitHub's own documented behavior: scheduled workflows are
+# explicitly best-effort, get deprioritized under platform load, and
+# frequent (every-few-minutes) schedules are the ones most affected -
+# community reports consistently describe LESS frequent schedules (15+
+# min) being honored far more consistently than aggressive ones. Declaring
+# 15 minutes here isn't a downgrade in the sense of asking for less than
+# we want - the */5 declaration was never actually being delivered at
+# anywhere close to */5 in practice, so this asks for what GitHub can
+# actually keep, rather than continuing to lose out to its own
+# deprioritization of an interval it wasn't honoring anyway. This is the
+# backstop scheduler - Cloudflare's own 5-minute cron (cron-worker/
+# wrangler.toml) still runs as the fast path when it succeeds; this exists
+# specifically to survive the CPU-limit failures on that side (see
+# scripts/gh-actions-refresh.mjs for the full story).
 on:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '*/15 * * * *'
   workflow_dispatch: {}
 
 jobs:
